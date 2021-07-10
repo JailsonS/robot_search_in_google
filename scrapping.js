@@ -1,9 +1,5 @@
 const puppeteer = require('puppeteer');
 const toArray = require('./scrapping_aux');
-
-
-
-
     
 (async () => {
     
@@ -60,8 +56,8 @@ const toArray = require('./scrapping_aux');
     await toArray.CSVToArray('indicators.csv')
         .then((res) => keywords = res);
 
-
     console.log(keywords);
+    
 
     await browser.close();
 })();
