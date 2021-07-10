@@ -1,9 +1,15 @@
 const puppeteer = require('puppeteer');
+const toArray = require('./scrapping_aux');
 
+
+
+
+    
 (async () => {
     
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
+    let keywords = [];
 
     await page.goto('https://www.google.com/search?q=IDH+composicao', {
         waitUntil: 'networkidle2',
@@ -11,7 +17,7 @@ const puppeteer = require('puppeteer');
 
     const arrLinks = await page.evaluate(() => {
         
-        const pageCount = 8;
+        const pageCount = 3;
 
         let arrLinks = [];
         for(let i = 0; i < pageCount; i++) {
@@ -50,13 +56,12 @@ const puppeteer = require('puppeteer');
         textList.push(...arrText);
     }
 
-    // iterate words and check match
-    /*
-    Object.keys(keywords).map((key) => {
-        keywords[key];
-    });
-    */
+    // csv2Array
+    await toArray.CSVToArray('indicators.csv')
+        .then((res) => keywords = res);
+
+
+    console.log(keywords);
 
     await browser.close();
 })();
-
