@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const toArray = require('./scrapping_aux');
+const aux = require('./scrapping_aux');
     
 (async () => {
     
@@ -11,22 +11,7 @@ const toArray = require('./scrapping_aux');
         waitUntil: 'networkidle2',
     });
 
-    const arrLinks = await page.evaluate(() => {
-        
-        const pageCount = 3;
-
-        let arrLinks = [];
-        for(let i = 0; i < pageCount; i++) {
-            let link = document.querySelectorAll('#rso a')[i].getAttribute('href');
-            let isHttp = link.startsWith('http://');
-            let isHttps = link.startsWith('https://');
-
-            if(isHttp || isHttps) {
-                arrLinks.push(link);
-            } 
-        }
-        return arrLinks;
-    });
+    const arrLinks = await aux.getLinks(page);
 
     // get texts to be evaluated
     let textList = [];
@@ -53,11 +38,16 @@ const toArray = require('./scrapping_aux');
     }
 
     // csv2Array
-    await toArray.CSVToArray('indicators.csv')
+    await aux.CSVToArray('indicators.csv')
         .then((res) => keywords = res);
 
-    console.log(keywords);
-    
+    const result = aux.findWords(keywords, textList);
+
+    let resultToArr = Object.entries(result)
+    resultToArr = resultToArr.filter(([key, value]) => value == true);
+    resultToArr = Object.fromEntries(resultToArr)
+
+    console.log(resultToArr);
 
     await browser.close();
 })();
