@@ -27,6 +27,35 @@ module.exports = {
             
     },
 
+    getText: async (browser, arrLinks) => {
+
+        // get texts to be evaluated
+        let textList = [];
+        for(let l in arrLinks) {
+            let nPage = await browser.newPage();
+
+            await nPage.goto(arrLinks[l], {
+                waitUntil: 'networkidle2',
+            });
+
+            const arrText = await nPage.evaluate(() => {
+
+                let c = document.querySelectorAll('p').length;
+
+                let groupText = [];
+                for(let i=1; i < c; i++) {
+                    let txt = document.querySelectorAll('p')[i].textContent;
+                    groupText.push(txt);
+                }
+                return groupText;
+            });
+
+            textList.push(...arrText);
+        }
+        
+        return textList;
+    },
+
     CSVToArray: (csvfile) => new Promise(resolve => {
         //let keys = []
         let list = []

@@ -3,7 +3,7 @@ const aux = require('./scrapping_aux');
     
 (async () => {
     
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
     let keywords = [];
 
@@ -12,30 +12,7 @@ const aux = require('./scrapping_aux');
     });
 
     const arrLinks = await aux.getLinks(page);
-
-    // get texts to be evaluated
-    let textList = [];
-    for(let l in arrLinks) {
-        let nPage = await browser.newPage();
-
-        await nPage.goto(arrLinks[l], {
-            waitUntil: 'networkidle2',
-        });
-
-        const arrText = await nPage.evaluate(() => {
-
-            let c = document.querySelectorAll('p').length;
-
-            let groupText = [];
-            for(let i=1; i < c; i++) {
-                let txt = document.querySelectorAll('p')[i].textContent;
-                groupText.push(txt);
-            }
-            return groupText;
-        });
-
-        textList.push(...arrText);
-    }
+    const textList = await aux.getText(browser, arrLinks);
 
     // csv2Array
     await aux.CSVToArray('indicators.csv')
