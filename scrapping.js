@@ -3,25 +3,27 @@ const aux = require('./scrapping_aux');
     
 (async () => {
     
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     let keywords = [];
 
-    await page.goto('https://www.google.com/search?q=IDH+composicao', {
+    page.setDefaultNavigationTimeout(0);
+
+    await page.goto('https://www.google.com/search?q=IDH+indicadores', {
         waitUntil: 'networkidle2',
     });
 
     const arrLinks = await aux.getLinks(page);
-    const textList = await aux.getText(browser, arrLinks);
+    const allText = await aux.getText(browser, arrLinks);
 
     // csv2Array
     await aux.CSVToArray('indicators.csv')
         .then((res) => keywords = res);
 
-    const result = aux.findWords(keywords, textList);
+    const result = aux.findWords(keywords, allText);
 
     let resultToArr = Object.entries(result)
-    resultToArr = resultToArr.filter(([key, value]) => value == true);
+    resultToArr = resultToArr.filter(([key, value]) => value > 0);
     resultToArr = Object.fromEntries(resultToArr)
 
     console.log(resultToArr);
