@@ -3,7 +3,6 @@ const fs = require('fs');
 
 module.exports = {
 
-
     getLinks: (page) => {
 
         const arrLinks = page.evaluate(() => {
@@ -27,8 +26,35 @@ module.exports = {
             
     },
 
+    getText: async (browser, arrLinks) => {
+        let allText = '';
+        for(let l in arrLinks) {
+            let nPage = await browser.newPage();
+            
+            nPage.setDefaultNavigationTimeout(0);
+            
+            await nPage.goto(arrLinks[l], {
+                waitUntil: 'networkidle2',
+            });
+
+            const arrText = await nPage.evaluate(() => {
+                let c = document.querySelectorAll('p').length;
+
+                let groupText = '';
+                for(let i=1; i < c; i++) {
+                    let txt = document.querySelectorAll('p')[i].textContent.replace(/\s+/g, ' ').trim();
+                    groupText = groupText.concat('' + txt);
+                }
+                return groupText;
+            });
+
+            allText = allText.concat(arrText);
+        }
+        
+        return allText;
+    },
+
     CSVToArray: (csvfile) => new Promise(resolve => {
-        //let keys = []
         let list = []
         fs.createReadStream(csvfile).pipe(csv({ separator:';', headers:false }))
             .on('data', (data) => {
@@ -47,32 +73,35 @@ module.exports = {
             })
     }),
 
-    findWords: (arrKeys, textList) => 
+    findWords: (arrKeys, allText) => 
     {
         let result = {};
 
         arrKeys.forEach((obj) => {
             const k = Object.keys(obj)[0];
             const arrValues = Object.values(obj)[0]; // []
-            let kval = false;
+            let kval = 0;
+            let kCount = 0;
 
             for(let i in arrValues) {
                 const kw = arrValues[i];
-                for(let x in textList) {
-                    const txt = textList[x].toLowerCase();
-                    //console.log(txt)
-                    let rs = txt.search(kw);                    
-                    if(rs != -1) {
-                        kval = true; break;
-                    }
-                }
-                if(kval == true){ 
-                    break; 
-                }
+                const regex = new RegExp( kw, 'gi' );
+                const founded = allText.match(regex);
+
+                if(founded != null) {
+                    kCount = kCount + founded.length;
+                }                
             }
-            return result[k] = kval;
+
+            return result[k] = kCount;
         });
 
         return result;
     }
 }
+
+
+
+
+
+
