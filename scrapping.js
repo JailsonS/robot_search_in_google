@@ -7,47 +7,27 @@ const aux = require('./scrapping_aux');
     const page = await browser.newPage();
     let keywords = [];
 
-    await page.goto('https://www.google.com/search?q=IDH+composicao', {
+    page.setDefaultNavigationTimeout(0);
+
+    await page.goto('https://www.google.com/search?q=IDH+indicadores', {
         waitUntil: 'networkidle2',
     });
 
     const arrLinks = await aux.getLinks(page);
-
-    // get texts to be evaluated
-    let textList = [];
-    for(let l in arrLinks) {
-        let nPage = await browser.newPage();
-
-        await nPage.goto(arrLinks[l], {
-            waitUntil: 'networkidle2',
-        });
-
-        const arrText = await nPage.evaluate(() => {
-
-            let c = document.querySelectorAll('p').length;
-
-            let groupText = [];
-            for(let i=1; i < c; i++) {
-                let txt = document.querySelectorAll('p')[i].textContent;
-                groupText.push(txt);
-            }
-            return groupText;
-        });
-
-        textList.push(...arrText);
-    }
+    const allText = await aux.getText(browser, arrLinks);
 
     // csv2Array
     await aux.CSVToArray('indicators.csv')
         .then((res) => keywords = res);
 
-    const result = aux.findWords(keywords, textList);
+    const result = aux.findWords(keywords, allText);
 
     let resultToArr = Object.entries(result)
-    resultToArr = resultToArr.filter(([key, value]) => value == true);
+    resultToArr = resultToArr.filter(([key, value]) => value > 0);
     resultToArr = Object.fromEntries(resultToArr)
 
     console.log(resultToArr);
 
     await browser.close();
 })();
+
