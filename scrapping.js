@@ -30,3 +30,4 @@ const aux = require('./scrapping_aux');
 
     await browser.close();
 })();
+

@@ -80,7 +80,6 @@ module.exports = {
         arrKeys.forEach((obj) => {
             const k = Object.keys(obj)[0];
             const arrValues = Object.values(obj)[0]; // []
-            let kval = 0;
             let kCount = 0;
 
             for(let i in arrValues) {
@@ -99,10 +98,6 @@ module.exports = {
         return result;
     }
 }
-
-
-
-
 
 
 
